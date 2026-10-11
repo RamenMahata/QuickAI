@@ -180,6 +180,53 @@ The application will be available at:
 - **Frontend**: http://localhost:5173 (or the port shown in terminal)
 - **Backend**: http://localhost:3000
 
+## Catalyst deployment (v2)
+
+The Vercel deployment remains supported. Catalyst uses the same source with:
+
+- `client/` deployed as a **Slate** React/Vite frontend.
+- `server/` deployed as an **AppSail** Node.js service using `server/Dockerfile`.
+
+### 1. Deploy the backend to Catalyst AppSail
+
+In the Catalyst console, create an AppSail service from the `server/` directory (or
+the repository's `server/Dockerfile`). Use the Node.js/Docker runtime and configure
+these environment variables in the Development environment:
+
+```env
+DATABASE_URL=
+CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+GEMINI_API_KEY=
+CLIPDROP_API_KEY=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+CORS_ORIGINS=https://<your-slate-app>.onslate.<dc-domain>
+```
+
+Do not add `PORT`; AppSail supplies `X_ZOHO_CATALYST_LISTEN_PORT`. The service health
+check can use `/health`.
+
+### 2. Deploy the frontend to Catalyst Slate
+
+Create a Slate React/Vite app from the `client/` directory. Set these variables at
+build time:
+
+```env
+VITE_CLERK_PUBLISHABLE_KEY=
+VITE_BASE_URL=https://<your-appsail-service>-<your-zaid>.catalystappsail.<dc-domain>
+```
+
+Build with `npm run build` and deploy the generated `client/dist` directory. The
+`client/public/_redirects` file preserves React Router routes on refresh.
+
+### 3. Update the CORS origin
+
+After Slate provides its final domain, set `CORS_ORIGINS` in AppSail to that exact
+origin (without a trailing slash), redeploy the backend, and test `/health`, login,
+and one authenticated AI request in Development before promoting it.
+
 ---
 
 ## 📸 Screenshots
@@ -248,5 +295,3 @@ This project is open source and available under the [MIT License](LICENSE).
 - **Cloudinary** for cloud storage solutions
 - **Neon** for serverless PostgreSQL
 - **Vercel** for hosting infrastructure
-
-
